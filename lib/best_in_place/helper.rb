@@ -27,7 +27,7 @@ module BestInPlace
       if opts[:type] == :checkbox
         value = !!real_object.send(field)
         if !opts[:collection].blank? && opts[:collection][0] == :actual_checkbox
-          opts[:collection] = ['<input type=checkbox></input>', '<input type=checkbox checked></input>']
+          opts[:collection] = ['<input type=checkbox />', '<input type=checkbox checked />']
           opts[:sanitize] = false
         elsif opts[:collection].blank? || opts[:collection].size != 2
           opts[:collection] = ["No", "Yes"]
