@@ -26,7 +26,10 @@ module BestInPlace
       end
       if opts[:type] == :checkbox
         value = !!real_object.send(field)
-        if opts[:collection].blank? || opts[:collection].size != 2
+        if !opts[:collection].blank? && opts[:collection][0] == :actual_checkbox
+          opts[:collection] = ['<input type=checkbox />', '<input type=checkbox checked />']
+          opts[:sanitize] = false
+        elsif opts[:collection].blank? || opts[:collection].size != 2
           opts[:collection] = ["No", "Yes"]
         end
         display_value = value ? opts[:collection][1] : opts[:collection][0]
@@ -47,13 +50,20 @@ module BestInPlace
       out << " data-attribute='#{field}'"
       out << " data-activator='#{opts[:activator]}'" unless opts[:activator].blank?
       out << " data-ok-button='#{opts[:ok_button]}'" unless opts[:ok_button].blank?
+      out << " data-ok-button-class='#{opts[:ok_button_class]}'" unless opts[:ok_button_class].blank?
       out << " data-cancel-button='#{opts[:cancel_button]}'" unless opts[:cancel_button].blank?
+      out << " data-cancel-button-class='#{opts[:cancel_button_class]}'" unless opts[:cancel_button_class].blank?
       out << " data-nil='#{attribute_escape(opts[:nil])}'" unless opts[:nil].blank?
       out << " data-use-confirm='#{opts[:use_confirm]}'" unless opts[:use_confirm].nil?
       out << " data-type='#{opts[:type]}'"
       out << " data-inner-class='#{opts[:inner_class]}'" if opts[:inner_class]
       out << " data-html-attrs='#{opts[:html_attrs].to_json}'" unless opts[:html_attrs].blank?
-      out << " data-original-content='#{attribute_escape(real_object.send(field))}'" if opts[:display_as] || opts[:display_with]
+      if opts[:display_content]
+        out << " data-original-content='#{opts[:display_content]}'"
+      elsif opts[:display_as] || opts[:display_with]
+        out << " data-original-content='#{attribute_escape(real_object.send(field))}'"
+      end
+      out << " data-mask='#{opts[:mask]}'" if opts[:mask]
       out << " data-value='#{attribute_escape(value)}'" if value
 
       if opts[:data] && opts[:data].is_a?(Hash)
@@ -86,11 +96,12 @@ module BestInPlace
     def build_value_for(object, field, opts)
       return "" if object.send(field).blank?
 
-      if (object.respond_to?(:id))
-        klass = "#{object.class}_#{object.id}"
+      klass = if object.respond_to?(:id)
+        "#{object.class}_#{object.id}"
       else
-        klass = object.class.to_s
+        object.class.to_s
       end
+
       if opts[:display_as]
         BestInPlace::DisplayMethods.add_model_method(klass, field, opts[:display_as])
         object.send(opts[:display_as]).to_s
@@ -98,6 +109,7 @@ module BestInPlace
       elsif opts[:display_with].try(:is_a?, Proc)
         BestInPlace::DisplayMethods.add_helper_proc(klass, field, opts[:display_with])
         opts[:display_with].call(object.send(field))
+
       elsif opts[:display_with]
         BestInPlace::DisplayMethods.add_helper_method(klass, field, opts[:display_with], opts[:helper_options])
         if opts[:helper_options]
@@ -107,7 +119,7 @@ module BestInPlace
         end
 
       else
-        object.send(field).to_s.presence || ""
+        object.send(field).to_s
       end
     end
 

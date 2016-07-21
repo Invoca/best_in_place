@@ -30,8 +30,9 @@ The editor works by PUTting the updated value to the server and GETting the upda
 - Autogrowing textarea
 - Helper for generating the best_in_place field only if a condition is satisfied
 - Provided test helpers to be used in your integration specs
-- Custom display methods using a method from your model or an existing rails
-  view helper
+- Custom display methods using a method from your model or an existing rails view helper
+- Input field masking compatible with maskedInput
+- Checkbox can display an actual HTML checkbox or images
 
 ##Usage of Rails 3 Gem
 
@@ -47,16 +48,19 @@ Options:
 
 - **:type** It can be only [:input, :textarea, :select, :checkbox, :date (>= 1.0.4)] or if undefined it defaults to :input.
 - **:collection**: In case you are using the :select type then you must specify the collection of values it takes. In case you are
-  using the :checkbox type you can specify the two values it can take, or otherwise they will default to Yes and No.
+  using the :checkbox type you can specify the two values it can take, or otherwise they will default to Yes and No.  Alternatively,
+  if you specify [:actual_checkbox] as your collection, an HTML checkbox will be displayed.
 - **:path**: URL to which the updating action will be sent. If not defined it defaults to the :object path.
 - **:nil**: The nil param defines the content displayed in case no value is defined for that field. It can be something like "click me to edit".
   If not defined it will show *"-"*.
 - **:activator**: Is the DOM object that can activate the field. If not defined the user will making editable by clicking on it.
 - **:ok_button**: (Inputs and textareas only) If set to a string, then an OK button will be shown with the string as its label, replacing save on blur.
+- **:ok_button_class**: (Inputs and textareas only) Specifies any extra classes to set on the OK button.
 - **:cancel_button**: (Inputs and textareas only) If set to a string, then a Cancel button will be shown with the string as its label.
+- **:cancel_button_class**: (Inputs and textareas only) Specifies any extra classes to set on the Cancel button.
 - **:sanitize**: True by default. If set to false the input/textarea will accept html tags.
 - **:html_attrs**: Hash of html arguments, such as maxlength, default-value etc.
-- **:inner_class**: Class that is set to the rendered form.
+- **:inner_class**: Class that is set to the rendered input.
 - **:display_as**: A model method which will be called in order to display
   this field.
 - **:object_name**: Used for overriding the default params key used for the object (the data-object attribute). Useful for e.g. STI scenarios where best_in_place should post to a common controller for different models.
@@ -118,6 +122,14 @@ The key can be a string or an integer.
 
 The first value is always the negative boolean value and the second the positive. Structure: `["false value", "true value"]`.
 If not defined, it will default to *Yes* and *No* options.
+
+Image tags can be used as the collection values:
+
+    <%= best_in_place @user, :receive_emails, :type => :checkbox, :collection => [image_tag('no.png'), image_tag('yes.png')] %>
+
+The collection can also specify a standard HTML checkbox:
+
+    <%= best_in_place @user, :receive_emails, :type => :checkbox, :collection => [:actual_checkbox] %>
 
 ### Date
 
@@ -188,11 +200,11 @@ You can also pass in a proc or lambda like this:
 
 The 'ajax:success' event is triggered upon success. Use bind:
 
-    $('.best_in_place').bind("ajax:success", function(){$(this).closest('tr').effect('highlight'));});
+    $('.best_in_place').bind("ajax:success", function () {$(this).closest('tr').effect('highlight'); });
 
-To bind a callback that is specific to a particular field, use the 'classes' option in the helper method and 
-then bind to that class. 
-    
+To bind a callback that is specific to a particular field, use the 'classes' option in the helper method and
+then bind to that class.
+
     <%= best_in_place @user, :name, :classes => 'highlight_on_success' %>
     <%= best_in_place @user, :mail, :classes => 'bounce_on_success' %>
 

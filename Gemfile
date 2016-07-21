@@ -5,4 +5,6 @@ gemspec
 
 gem 'sqlite3'
 gem 'jquery-rails'
+gem 'jquery-ui-rails'
 gem 'rdiscount'
+gem 'coveralls', require: false
